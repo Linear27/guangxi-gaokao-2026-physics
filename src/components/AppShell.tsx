@@ -17,7 +17,7 @@ import GitHubIcon from '@mui/icons-material/GitHub'
 import type { ReactNode } from 'react'
 import type { SummaryData } from '../types'
 
-const repositoryUrl = 'https://github.com/Linear27/gaokao-guide-2026-physics'
+const repositoryUrl = 'https://github.com/Linear27/guangxi-gaokao-2026-physics'
 
 type AppShellProps = {
   summary: SummaryData
