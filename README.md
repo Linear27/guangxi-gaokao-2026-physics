@@ -1,6 +1,26 @@
 # 广西 2026 物理类招生计划查询
 
-面向考生的静态查询站，整理自《2026年广西高考指南招生计划篇（物理类）》。站点支持按院校、专业、批次检索，并展示 PDF 页码/书页码，方便回到官方材料核对。
+面向广西 2026 年普通高考物理类考生的静态查询站。项目将《2026年广西高考指南招生计划篇（物理类）》中的招生计划整理为可浏览、可检索的网页，支持按院校、专业、批次查看，并保留 PDF 页码和书页码，方便回到原材料核对。
+
+## 功能
+
+- 按关键词检索院校、专业、专业代码、专业组和备注。
+- 按本科提前批、本科普通/预科、高职高专提前批、高职高专普通批分层浏览。
+- 按院校查看不同批次下的专业计划。
+- 按批次查看该批次下的院校和专业计划。
+- 展示计划数、学制、学费、校区、选科要求、备注、PDF 页码和书页码。
+- 提供 `/llms.txt`、`/data/schema.json`、`/data/manifest.json`，方便公开数据被机器读取。
+
+## 数据口径
+
+公共数据位于 `public/data/`：
+
+- `site.json`：公共主数据。
+- `summary.json`：首页统计和筛选摘要。
+- `programs.json`：检索页专业计划数据。
+- `schools.json`、`schools/*.json`：院校索引和院校详情切片。
+- `batches/*.json`：批次详情切片。
+- `schema.json`、`manifest.json`：公开数据说明。
 
 ## 技术栈
 
@@ -11,34 +31,34 @@
 - MUI X Data Grid Community
 - React Router
 
-## 数据
-
-公共数据位于 `public/data/`：
-
-- `site.json`：公共主数据
-- `summary.json`：首页和筛选摘要
-- `programs.json`：检索页专业计划数据
-- `schools.json`、`schools/*.json`：院校索引和院校详情切片
-- `batches/*.json`：批次详情切片
-- `schema.json`、`manifest.json`：公开数据说明
-
-仓库只包含公共站代码和公共数据，不包含原始材料或内部工作产物。
-
-## 开发
+## 本地开发
 
 ```bash
 npm install
 npm run dev
+```
+
+常用检查：
+
+```bash
 npm run lint
 npm run build
 ```
 
-## Cloudflare Pages
+## 部署
 
+推荐部署到 Cloudflare Pages。根据 Cloudflare Pages 官方构建配置，选择：
+
+- Framework preset: `React (Vite)`
 - Build command: `npm run build`
-- Output directory: `dist`
-- SPA fallback: `public/_redirects`
+- Build output directory: `dist`
 
-## 发布口径
+项目使用 `public/_redirects` 提供单页应用路由回退：
 
-本项目为非官方整理版。正式填报前，请以官方材料、高校招生章程和招生考试院发布信息为准。
+```text
+/* /index.html 200
+```
+
+## 说明
+
+本项目为非官方整理版，仅用于辅助浏览和检索。正式填报前，请以官方材料、高校招生章程和招生考试院发布信息为准。

@@ -1,4 +1,4 @@
-import { Link as RouterLink, useNavigate } from 'react-router-dom'
+import { Link as RouterLink } from 'react-router-dom'
 import {
   Button,
   Card,
@@ -7,13 +7,10 @@ import {
   Chip,
   Divider,
   Grid,
-  TextField,
   Stack,
   Typography,
 } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search'
-import SchoolIcon from '@mui/icons-material/School'
-import { useState } from 'react'
 import type { BatchSummary, SummaryData } from '../types'
 import { formatNumber } from '../data/derive'
 
@@ -67,15 +64,7 @@ const batchGroups: BatchGroup[] = [
 const admissionTypeKeywords = ['预科类', '免费少数民族预科班', '少数民族预科班', '民族班', '边防军人子女预科班']
 
 export function HomePage({ summary }: HomePageProps) {
-  const navigate = useNavigate()
-  const [schoolKeyword, setSchoolKeyword] = useState('')
   const batchMap = new Map(summary.batches.map((batch) => [batch.batchName, batch]))
-  const trimmedSchoolKeyword = schoolKeyword.trim()
-
-  const goToSearch = (keyword: string) => {
-    const trimmedKeyword = keyword.trim()
-    navigate(trimmedKeyword ? `/search?keyword=${encodeURIComponent(trimmedKeyword)}` : '/search')
-  }
 
   return (
     <Stack spacing={3}>
@@ -111,7 +100,7 @@ export function HomePage({ summary }: HomePageProps) {
       </Grid>
 
       <Grid container spacing={2}>
-        <Grid size={{ xs: 12, md: 6 }}>
+        <Grid size={{ xs: 12, md: 8 }}>
           <Card>
             <CardContent>
               <Stack spacing={2}>
@@ -127,45 +116,7 @@ export function HomePage({ summary }: HomePageProps) {
             </CardContent>
           </Card>
         </Grid>
-        <Grid size={{ xs: 12, md: 6 }}>
-          <Card>
-            <CardContent>
-              <Stack spacing={2}>
-                <Typography component="h2" variant="h2">
-                  快速查院校
-                </Typography>
-                <Stack
-                  component="form"
-                  direction={{ xs: 'column', sm: 'row' }}
-                  onSubmit={(event) => {
-                    event.preventDefault()
-                    goToSearch(schoolKeyword)
-                  }}
-                  spacing={1.5}
-                >
-                  <TextField
-                    label="院校名称或代码"
-                    onChange={(event) => setSchoolKeyword(event.target.value)}
-                    placeholder="如 广西艺术学院 / 10607"
-                    value={schoolKeyword}
-                  />
-                  <Button
-                    disabled={!trimmedSchoolKeyword}
-                    startIcon={<SchoolIcon />}
-                    sx={{ alignSelf: { xs: 'stretch', sm: 'center' } }}
-                    type="submit"
-                  >
-                    查院校
-                  </Button>
-                </Stack>
-                <Typography color="text.secondary" variant="body2">
-                  输入院校名或院校代码后进入检索页查看相关专业计划。
-                </Typography>
-              </Stack>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid size={{ xs: 12, md: 6 }}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <Card>
             <CardContent>
               <Stack spacing={2}>

@@ -29,5 +29,4 @@
 ## Notes For Agents
 
 - /data/site.json 是唯一公共主数据。
-- 公共站不提供内部质检队列、页面识别服务名或原始识别文本。
-- 专业计划中的政策标签含义见 /data/schema.json。
+- 字段说明和特殊标签含义见 /data/schema.json。
