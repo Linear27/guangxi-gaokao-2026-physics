@@ -1,0 +1,30 @@
+{
+  "title": "2026年广西高考指南招生计划篇（物理类）",
+  "generatedAt": "2026-06-24T08:15:45+00:00",
+  "counts": {
+    "schools": 1998,
+    "batches": 14,
+    "programs": 28852
+  },
+  "labels": {
+    "不编制分省计划": 559,
+    "以高校公布计划为准": 37,
+    "不作分省计划": 1,
+    "军队承担": 200,
+    "免收学费": 6
+  },
+  "files": {
+    "siteJson": "/data/site.json",
+    "summary": "/data/summary.json",
+    "schools": "/data/schools.json",
+    "programs": "/data/programs.json",
+    "schema": "/data/schema.json",
+    "manifest": "/data/manifest.json"
+  },
+  "routes": {
+    "home": "/",
+    "search": "/search",
+    "school": "/schools/{schoolCode}",
+    "batch": "/batches/{batchSlug}"
+  }
+}

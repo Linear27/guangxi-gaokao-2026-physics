@@ -1,0 +1,105 @@
+import { lazy, Suspense, useDeferredValue, useEffect, useMemo, useState, useTransition } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { Alert, Box, Card, CardContent, Stack, Typography } from '@mui/material'
+import { BatchFilter } from '../components/BatchFilter'
+import { loadProgramsData, loadSchoolIndexData } from '../data/loadSiteData'
+import type { Program, School, SummaryData } from '../types'
+import {
+  applyIndexedSearchFilters,
+  buildProgramSearchIndex,
+  formatNumber,
+  type SearchFilters,
+} from '../data/derive'
+
+const ProgramGrid = lazy(() =>
+  import('../components/ProgramGrid').then((module) => ({ default: module.ProgramGrid })),
+)
+
+type SearchPageProps = {
+  summary: SummaryData
+}
+
+const initialFilters: SearchFilters = {
+  keyword: '',
+  batchName: '',
+  schoolCode: '',
+  majorGroupCode: '',
+  firstSubject: '',
+  secondSubject: '',
+}
+
+export function SearchPage({ summary }: SearchPageProps) {
+  const [searchParams] = useSearchParams()
+  const keywordParam = searchParams.get('keyword')?.trim() ?? ''
+  const [filters, setFilters] = useState<SearchFilters>({ ...initialFilters, keyword: keywordParam })
+  const deferredFilters = useDeferredValue(filters)
+  const [, startTransition] = useTransition()
+  const [schools, setSchools] = useState<School[] | null>(null)
+  const [programs, setPrograms] = useState<Program[]>([])
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let alive = true
+    Promise.all([loadProgramsData(), loadSchoolIndexData()])
+      .then(([programsPayload, schoolsPayload]) => {
+        if (!alive) return
+        setPrograms(programsPayload.programs)
+        setSchools(schoolsPayload.schools)
+      })
+      .catch((loadError: unknown) => {
+        if (alive) {
+          setError(loadError instanceof Error ? loadError.message : '检索数据加载失败')
+        }
+      })
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  useEffect(() => {
+    setFilters((currentFilters) =>
+      currentFilters.keyword === keywordParam ? currentFilters : { ...currentFilters, keyword: keywordParam },
+    )
+  }, [keywordParam])
+
+  const majorGroups = summary.filterOptions.majorGroups
+  const firstSubjects = summary.filterOptions.firstSubjects
+  const secondSubjects = summary.filterOptions.secondSubjects
+  const searchIndex = useMemo(() => buildProgramSearchIndex(programs), [programs])
+  const filteredPrograms = useMemo(
+    () => applyIndexedSearchFilters(searchIndex, deferredFilters),
+    [deferredFilters, searchIndex],
+  )
+  const visibleProgramCount = programs.length > 0 ? filteredPrograms.length : summary.counts.programs
+
+  if (error) return <Alert severity="error">{error}</Alert>
+
+  return (
+    <Stack spacing={2}>
+      <Stack spacing={0.5}>
+        <Typography component="h1" variant="h1">
+          招生计划检索
+        </Typography>
+        <Typography color="text.secondary">
+          当前显示 {formatNumber(visibleProgramCount)} 条，数据总量 {formatNumber(summary.counts.programs)} 条。
+        </Typography>
+      </Stack>
+      <Card>
+        <CardContent>
+          <BatchFilter
+            batches={summary.batches}
+            filters={filters}
+            firstSubjects={firstSubjects}
+            majorGroups={majorGroups}
+            onChange={(nextFilters) => startTransition(() => setFilters(nextFilters))}
+            schools={schools ?? []}
+            secondSubjects={secondSubjects}
+          />
+        </CardContent>
+      </Card>
+      <Suspense fallback={null}>
+        {programs.length > 0 ? <ProgramGrid programs={filteredPrograms} /> : <Box sx={{ height: 640, minHeight: 360 }} />}
+      </Suspense>
+    </Stack>
+  )
+}

@@ -1,0 +1,124 @@
+import { useMemo } from 'react'
+import { Link as RouterLink } from 'react-router-dom'
+import { Box, Link, Tooltip, Typography } from '@mui/material'
+import { DataGrid, type GridColDef } from '@mui/x-data-grid'
+import type { Program, ProgramRow } from '../types'
+import { formatNumber, formatPlanCount, formatTuition, toRows } from '../data/derive'
+
+type ProgramGridProps = {
+  programs: Program[]
+  height?: number
+}
+
+const columns: GridColDef<ProgramRow>[] = [
+  {
+    field: 'batchName',
+    headerName: '批次',
+    minWidth: 190,
+    flex: 1,
+  },
+  {
+    field: 'schoolCode',
+    headerName: '院校代码',
+    width: 100,
+    renderCell: (params) => (
+      <Link component={RouterLink} to={`/schools/${params.row.schoolCode}`} underline="hover">
+        {params.row.schoolCode}
+      </Link>
+    ),
+  },
+  {
+    field: 'schoolName',
+    headerName: '院校',
+    minWidth: 160,
+    flex: 1,
+    renderCell: (params) => (
+      <Tooltip title={params.row.schoolName}>
+        <Link component={RouterLink} to={`/schools/${params.row.schoolCode}`} underline="hover">
+          {params.row.schoolName}
+        </Link>
+      </Tooltip>
+    ),
+  },
+  {
+    field: 'majorGroupCode',
+    headerName: '专业组',
+    width: 92,
+  },
+  {
+    field: 'subjects',
+    headerName: '选科',
+    minWidth: 120,
+    valueGetter: (_value, row) => [row.firstSubject, row.secondSubject].filter(Boolean).join(' / '),
+  },
+  {
+    field: 'majorCode',
+    headerName: '专业代码',
+    width: 100,
+  },
+  {
+    field: 'majorName',
+    headerName: '专业',
+    minWidth: 220,
+    flex: 1.2,
+  },
+  {
+    field: 'planCount',
+    headerName: '计划',
+    width: 146,
+    valueFormatter: (value) => formatPlanCount(value),
+  },
+  {
+    field: 'durationYears',
+    headerName: '学制',
+    width: 82,
+    valueFormatter: (value) => (typeof value === 'number' ? `${value} 年` : '—'),
+  },
+  {
+    field: 'tuitionPerYear',
+    headerName: '学费/年',
+    width: 110,
+    valueFormatter: (value) => formatTuition(value),
+  },
+  {
+    field: 'campus',
+    headerName: '校区',
+    minWidth: 120,
+    flex: 0.8,
+    valueFormatter: (value) => value || '—',
+  },
+  {
+    field: 'remarks',
+    headerName: '备注',
+    minWidth: 240,
+    flex: 1.4,
+    renderCell: (params) => (
+      <Tooltip title={params.row.remarks || ''}>
+        <Typography noWrap variant="body2">
+          {params.row.remarks || '—'}
+        </Typography>
+      </Tooltip>
+    ),
+  },
+  {
+    field: 'pdfPage',
+    headerName: 'PDF 页',
+    width: 92,
+  },
+  {
+    field: 'bookPage',
+    headerName: '书页',
+    width: 82,
+    valueFormatter: (value) => formatNumber(value as number | null),
+  },
+]
+
+export function ProgramGrid({ programs, height = 640 }: ProgramGridProps) {
+  const rows = useMemo(() => toRows(programs), [programs])
+
+  return (
+    <Box sx={{ height, minHeight: 360, width: '100%' }}>
+      <DataGrid columns={columns} rows={rows} />
+    </Box>
+  )
+}
