@@ -1,4 +1,4 @@
-import type { PlanCount, Program, ProgramRow, Tuition } from '../types'
+import type { AdmissionLine, PlanCount, Program, ProgramRow, Tuition } from '../types'
 
 export type SearchFilters = {
   keyword: string
@@ -25,11 +25,18 @@ export function programId(program: Program, index: number): string {
   ].join('-')
 }
 
-export function toRows(programs: Program[]): ProgramRow[] {
+export type AdmissionLineIndex = Map<string, AdmissionLine>
+
+export function toRows(programs: Program[], admissionLineIndex?: AdmissionLineIndex): ProgramRow[] {
   return programs.map((program, index) => ({
     ...program,
     id: programId(program, index),
+    history2025: admissionLineIndex?.get(admissionLineKey(program)) ?? null,
   }))
+}
+
+export function buildAdmissionLineIndex(admissionLines: AdmissionLine[]): AdmissionLineIndex {
+  return new Map(admissionLines.map((line) => [admissionLineKey(line), line]))
 }
 
 export function batchNamesForPrograms(programs: Program[]): string[] {
@@ -111,6 +118,10 @@ export function formatPlanCount(value: PlanCount | null | undefined): string {
 export function formatTuition(value: Tuition | null | undefined): string {
   if (typeof value === 'number') return value.toLocaleString('zh-CN')
   return value || '—'
+}
+
+export function admissionLineKey(value: Pick<Program, 'batchName' | 'schoolCode' | 'majorGroupCode'>): string {
+  return [value.batchName, value.schoolCode, value.majorGroupCode].join('|')
 }
 
 export function naturalCompare(left: string, right: string): number {

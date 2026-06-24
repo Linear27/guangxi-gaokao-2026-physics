@@ -88,4 +88,22 @@ export type BatchPayload = {
 
 export type ProgramRow = Program & {
   id: string
+  history2025?: AdmissionLine | null
+}
+
+export type AdmissionLine = {
+  year: 2025
+  batchName: string
+  schoolCode: string
+  schoolName: string
+  majorGroupCode: string
+  minScore: number
+  rank: Maybe<number>
+  remarks: Maybe<string>
+  sourceTitle: string
+  sourceUrl: string
+}
+
+export type AdmissionLinesData = {
+  admissionLines: AdmissionLine[]
 }

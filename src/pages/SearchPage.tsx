@@ -2,10 +2,11 @@ import { lazy, Suspense, useDeferredValue, useEffect, useMemo, useState, useTran
 import { useSearchParams } from 'react-router-dom'
 import { Alert, Box, Card, CardContent, Stack, Typography } from '@mui/material'
 import { BatchFilter } from '../components/BatchFilter'
-import { loadProgramsData, loadSchoolIndexData } from '../data/loadSiteData'
-import type { Program, School, SummaryData } from '../types'
+import { loadAdmissionLines2025, loadProgramsData, loadSchoolIndexData } from '../data/loadSiteData'
+import type { AdmissionLine, Program, School, SummaryData } from '../types'
 import {
   applyIndexedSearchFilters,
+  buildAdmissionLineIndex,
   buildProgramSearchIndex,
   formatNumber,
   type SearchFilters,
@@ -36,15 +37,17 @@ export function SearchPage({ summary }: SearchPageProps) {
   const [, startTransition] = useTransition()
   const [schools, setSchools] = useState<School[] | null>(null)
   const [programs, setPrograms] = useState<Program[]>([])
+  const [admissionLines, setAdmissionLines] = useState<AdmissionLine[]>([])
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let alive = true
-    Promise.all([loadProgramsData(), loadSchoolIndexData()])
-      .then(([programsPayload, schoolsPayload]) => {
+    Promise.all([loadProgramsData(), loadSchoolIndexData(), loadAdmissionLines2025()])
+      .then(([programsPayload, schoolsPayload, admissionLinesPayload]) => {
         if (!alive) return
         setPrograms(programsPayload.programs)
         setSchools(schoolsPayload.schools)
+        setAdmissionLines(admissionLinesPayload.admissionLines)
       })
       .catch((loadError: unknown) => {
         if (alive) {
@@ -66,6 +69,7 @@ export function SearchPage({ summary }: SearchPageProps) {
   const firstSubjects = summary.filterOptions.firstSubjects
   const secondSubjects = summary.filterOptions.secondSubjects
   const searchIndex = useMemo(() => buildProgramSearchIndex(programs), [programs])
+  const admissionLineIndex = useMemo(() => buildAdmissionLineIndex(admissionLines), [admissionLines])
   const filteredPrograms = useMemo(
     () => applyIndexedSearchFilters(searchIndex, deferredFilters),
     [deferredFilters, searchIndex],
@@ -98,7 +102,11 @@ export function SearchPage({ summary }: SearchPageProps) {
         </CardContent>
       </Card>
       <Suspense fallback={null}>
-        {programs.length > 0 ? <ProgramGrid programs={filteredPrograms} /> : <Box sx={{ height: 640, minHeight: 360 }} />}
+        {programs.length > 0 ? (
+          <ProgramGrid admissionLineIndex={admissionLineIndex} programs={filteredPrograms} />
+        ) : (
+          <Box sx={{ height: 640, minHeight: 360 }} />
+        )}
       </Suspense>
     </Stack>
   )

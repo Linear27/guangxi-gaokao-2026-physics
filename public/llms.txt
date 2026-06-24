@@ -12,6 +12,8 @@
 - 批次切片: /data/batches/{batchSlug}.json
 - 字段说明: /data/schema.json
 - 数据摘要: /data/manifest.json
+- 2025参考线: /data/history/2025/guangxi-physics-admission-lines.json
+- 2025位次表: /data/history/2025/guangxi-physics-rank-by-score.json
 
 ## Public Routes
 

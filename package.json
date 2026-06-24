@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "build:history": "node scripts/build-2025-history.mjs",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",

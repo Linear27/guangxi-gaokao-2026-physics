@@ -4,13 +4,14 @@ import { Alert, Box, Stack, Tab, Tabs, Typography } from '@mui/material'
 import { ProgramGrid } from '../components/ProgramGrid'
 import { SchoolSummary } from '../components/SchoolSummary'
 import { LoadingScreen } from '../App'
-import { loadSchoolPayload } from '../data/loadSiteData'
-import type { SchoolPayload } from '../types'
-import { batchNamesForPrograms } from '../data/derive'
+import { loadAdmissionLines2025, loadSchoolPayload } from '../data/loadSiteData'
+import type { AdmissionLine, SchoolPayload } from '../types'
+import { admissionLineKey, batchNamesForPrograms, buildAdmissionLineIndex } from '../data/derive'
 
 export function SchoolPage() {
   const { schoolCode } = useParams()
   const [payload, setPayload] = useState<SchoolPayload | null>(null)
+  const [admissionLines, setAdmissionLines] = useState<AdmissionLine[]>([])
   const [error, setError] = useState<string | null>(null)
   const [selectedBatch, setSelectedBatch] = useState(0)
 
@@ -18,11 +19,14 @@ export function SchoolPage() {
     if (!schoolCode) return
     let alive = true
     setPayload(null)
+    setAdmissionLines([])
     setError(null)
     setSelectedBatch(0)
-    loadSchoolPayload(schoolCode)
-      .then((nextPayload) => {
-        if (alive) setPayload(nextPayload)
+    Promise.all([loadSchoolPayload(schoolCode), loadAdmissionLines2025()])
+      .then(([nextPayload, admissionLinesPayload]) => {
+        if (!alive) return
+        setPayload(nextPayload)
+        setAdmissionLines(admissionLinesPayload.admissionLines)
       })
       .catch((loadError: unknown) => {
         if (alive) setError(loadError instanceof Error ? loadError.message : '院校数据加载失败')
@@ -34,6 +38,17 @@ export function SchoolPage() {
 
   const programs = useMemo(() => payload?.programs ?? [], [payload])
   const batchNames = useMemo(() => batchNamesForPrograms(programs), [programs])
+  const admissionLineIndex = useMemo(() => buildAdmissionLineIndex(admissionLines), [admissionLines])
+
+  useEffect(() => {
+    if (programs.length === 0 || admissionLines.length === 0) return
+    const firstBatchWithLine = batchNames.findIndex((batchName) =>
+      programs.some((program) => program.batchName === batchName && admissionLineIndex.has(admissionLineKey(program))),
+    )
+    if (firstBatchWithLine >= 0) {
+      setSelectedBatch(firstBatchWithLine)
+    }
+  }, [admissionLineIndex, admissionLines.length, batchNames, programs])
 
   if (!schoolCode) {
     return <Navigate replace to="/search" />
@@ -64,7 +79,7 @@ export function SchoolPage() {
         <Typography component="h2" variant="h2">
           {activeBatchName}
         </Typography>
-        <ProgramGrid programs={activePrograms} />
+        <ProgramGrid admissionLineIndex={admissionLineIndex} programs={activePrograms} />
       </Stack>
     </Stack>
   )

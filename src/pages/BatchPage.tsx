@@ -3,13 +3,14 @@ import { Navigate, useParams } from 'react-router-dom'
 import { Alert, Card, CardContent, Stack, TextField, Typography } from '@mui/material'
 import { ProgramGrid } from '../components/ProgramGrid'
 import { LoadingScreen } from '../App'
-import { loadBatchPayload } from '../data/loadSiteData'
-import type { BatchPayload } from '../types'
-import { formatNumber } from '../data/derive'
+import { loadAdmissionLines2025, loadBatchPayload } from '../data/loadSiteData'
+import type { AdmissionLine, BatchPayload } from '../types'
+import { buildAdmissionLineIndex, formatNumber } from '../data/derive'
 
 export function BatchPage() {
   const { batchSlug } = useParams()
   const [payload, setPayload] = useState<BatchPayload | null>(null)
+  const [admissionLines, setAdmissionLines] = useState<AdmissionLine[]>([])
   const [keyword, setKeyword] = useState('')
   const deferredKeyword = useDeferredValue(keyword)
   const [, startTransition] = useTransition()
@@ -19,11 +20,14 @@ export function BatchPage() {
     if (!batchSlug) return
     let alive = true
     setPayload(null)
+    setAdmissionLines([])
     setKeyword('')
     setError(null)
-    loadBatchPayload(batchSlug)
-      .then((nextPayload) => {
-        if (alive) setPayload(nextPayload)
+    Promise.all([loadBatchPayload(batchSlug), loadAdmissionLines2025()])
+      .then(([nextPayload, admissionLinesPayload]) => {
+        if (!alive) return
+        setPayload(nextPayload)
+        setAdmissionLines(admissionLinesPayload.admissionLines)
       })
       .catch((loadError: unknown) => {
         if (alive) setError(loadError instanceof Error ? loadError.message : '批次数据加载失败')
@@ -34,6 +38,7 @@ export function BatchPage() {
   }, [batchSlug])
 
   const programs = useMemo(() => payload?.programs ?? [], [payload])
+  const admissionLineIndex = useMemo(() => buildAdmissionLineIndex(admissionLines), [admissionLines])
   const filteredPrograms = useMemo(() => {
     const normalizedKeyword = deferredKeyword.trim().toLocaleLowerCase('zh-CN')
     if (!normalizedKeyword) return programs
@@ -76,7 +81,7 @@ export function BatchPage() {
           />
         </CardContent>
       </Card>
-      <ProgramGrid programs={filteredPrograms} />
+      <ProgramGrid admissionLineIndex={admissionLineIndex} programs={filteredPrograms} />
     </Stack>
   )
 }

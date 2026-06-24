@@ -18,6 +18,8 @@
     "summary": "/data/summary.json",
     "schools": "/data/schools.json",
     "programs": "/data/programs.json",
+    "history2025": "/data/history/2025/guangxi-physics-admission-lines.json",
+    "history2025Ranks": "/data/history/2025/guangxi-physics-rank-by-score.json",
     "schema": "/data/schema.json",
     "manifest": "/data/manifest.json"
   },
